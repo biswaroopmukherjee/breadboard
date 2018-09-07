@@ -1,6 +1,7 @@
 # Django
 static/
 cloud_sql_proxy
+*secrets/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

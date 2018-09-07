@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from quickstart.models import (
+from api.models import (
         Image, Camera, Run, Dataset,
         Project, Lab, UserProfile
         )

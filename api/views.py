@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from django.contrib.auth.models import User, Group
 
-from quickstart.serializers import (
+from api.serializers import (
                 GroupSerializer,
                 UserSerializer,
                 UserProfileSerializer,
@@ -14,7 +14,7 @@ from quickstart.serializers import (
                 LabSerializer
         )
 
-from quickstart.models import UserProfile, Image, Camera, Run, Dataset, Project, Lab
+from api.models import UserProfile, Image, Camera, Run, Dataset, Project, Lab
 
 
 class UserViewSet(viewsets.ModelViewSet):

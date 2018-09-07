@@ -1,20 +1,17 @@
 import os
+from breadboard.secrets import secrets as secrets
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-with open('secrets/secret_key.txt') as f:
-    SECRET_KEY = f.read().strip()
-
-with open('secrets/database_password.txt') as f:
-    DBPASS = f.read().strip()
+SECRET_KEY = secrets.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
-    'breadboard-215001.appspot.com',
+    'breadboard-215702.appspot.com',
     'breadboard.biswaroop.me'
 ]
 
@@ -68,7 +65,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'breadboard',
         'USER': 'bec1',
-        'PASSWORD': DBPASS,
+        'PASSWORD': secrets.DBPASS,
         'PORT': '5432',
     }
 }

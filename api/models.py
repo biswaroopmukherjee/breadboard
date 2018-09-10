@@ -1,9 +1,18 @@
+import datetime
+
 from django.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.utils import timezone
 
-import datetime
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
 
 
 """
@@ -129,7 +138,7 @@ class Dataset(models.Model):
     """
     Class for a dataset: a collection of runs
     """
-    name = models.CharField('Dataset name', max_length=200, blank=True, null=True)
+    name = models.CharField('Dataset name', max_length=200, default='Dataset 1')
     created = models.DateTimeField('datetime created', default=timezone.now, blank=True)
     notes = models.TextField('Dataset notes', default='', blank=True, null=True)
     flag = models.CharField('Dataset flags', max_length=200, default='', blank=True, null=True)
@@ -152,7 +161,7 @@ class Project(models.Model):
     """
     Class for a project: a collection of datasets
     """
-    name = models.CharField('project name', max_length=200, blank=True, null=True)
+    name = models.CharField('project name', max_length=200, default='Project1')
     created = models.DateTimeField('datetime created', default=timezone.now, blank=True)
     notes = models.TextField('project notes', default='', blank=True, null=True)
 
@@ -171,7 +180,7 @@ class Lab(models.Model):
     """
     Class for a group of users that work in a Lab. Stores lab relevant info
     """
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=20, default='bec1')
     created = models.DateTimeField('date lab was registered', default=timezone.now, blank=True)
     info = models.TextField('detailed info about the lab', blank=True, null=True)
     photo = models.TextField('filepath to the lab photo', blank=True, null=True)

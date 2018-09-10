@@ -2,7 +2,7 @@
 # [START runtime]
 runtime: python
 env: flex
-entrypoint: gunicorn -b :$PORT tutorial.wsgi
+entrypoint: gunicorn -b :$PORT breadboard.wsgi
 
 beta_settings:
     cloud_sql_instances: breadboard-215702:us-east1:breadboard-instance

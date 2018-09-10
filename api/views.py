@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from django.contrib.auth.models import User, Group
+from rest_framework import permissions
+from rest_framework.generics import CreateAPIView
 
 from api.serializers import (
                 GroupSerializer,
@@ -15,6 +17,14 @@ from api.serializers import (
         )
 
 from api.models import UserProfile, Image, Camera, Run, Dataset, Project, Lab
+
+class CreateUserView(CreateAPIView):
+
+    model = User
+    permission_classes = [
+        permissions.AllowAny # Or anon users can't register
+    ]
+    serializer_class = UserSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):

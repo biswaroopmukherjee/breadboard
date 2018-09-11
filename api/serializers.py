@@ -55,7 +55,7 @@ class CameraSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Camera
         fields = ('url', 'id','name', 'sdk_id', 'created', 'magnification', 'axis',
-                    'pixel_size', 'double_imaging', 'active',
+                    'pixel_size', 'double_imaging', 'active', 'lab',
                     'calibration_dataset' )
 
 class RunSerializer(serializers.HyperlinkedModelSerializer):
@@ -93,6 +93,11 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'id','name', 'created', 'notes', 'lab', 'datasets')
 
 class LabSerializer(serializers.HyperlinkedModelSerializer):
+    cameras = serializers.HyperlinkedRelatedField(
+        queryset = Camera.objects.all(),
+        view_name='camera-detail',
+        many=True
+    )
     projects = serializers.HyperlinkedRelatedField(
         queryset = Project.objects.all(),
         view_name='project-detail',
@@ -105,4 +110,5 @@ class LabSerializer(serializers.HyperlinkedModelSerializer):
     )
     class Meta:
         model = Lab
-        fields = ('url', 'id','name', 'created', 'info', 'photo', 'runs', 'projects', 'userprofiles')
+        fields = ('url', 'id','name', 'created', 'info', 'photo', 'runs',
+                'cameras', 'projects', 'userprofiles')

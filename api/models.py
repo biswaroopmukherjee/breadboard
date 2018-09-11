@@ -103,6 +103,7 @@ class Camera(models.Model):
 
     # Relationships
     calibration_dataset = models.ForeignKey('Dataset', on_delete=models.SET_NULL, blank=True, null=True)
+    lab = models.ForeignKey('Lab', on_delete=models.PROTECT, related_name='cameras', null=True, blank=True)
 
     class Meta:
         ordering = ['-created','name']

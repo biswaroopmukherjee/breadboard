@@ -3,6 +3,8 @@ from rest_framework import viewsets
 from django.contrib.auth.models import User, Group
 from rest_framework import permissions
 from rest_framework.generics import CreateAPIView
+from rest_framework.exceptions import ParseError
+
 
 from api.serializers import (
                 GroupSerializer,
@@ -17,6 +19,8 @@ from api.serializers import (
         )
 
 from api.models import UserProfile, Image, Camera, Run, Dataset, Project, Lab
+
+
 
 class CreateUserView(CreateAPIView):
 
@@ -52,16 +56,63 @@ class ImageViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows images to be viewed or edited
     """
-    queryset = Image.objects.all()
     serializer_class = ImageSerializer
+    def get_queryset(self):
+        """
+        Restricts queries by lab and/or
+        workday and/or a datetime range """
+        queryset = Image.objects.all()
+        filter_dirty = {
+            'run__lab__name' : self.request.query_params.get('lab', None),
+            'run__workday' : self.request.query_params.get('workday', None),
+            'created__range' : (
+                        self.request.query_params.get('start_datetime', None),
+                        self.request.query_params.get('end_datetime', None),
+                        ),
+        }
+        filter_clean = {k: v for k, v in filter_dirty.items() if not (
+                        v==None or
+                        (isinstance(v, tuple) and (None in v))
+                )}
+
+        if len(filter_clean) is not 0:
+            queryset = queryset.filter(**filter_clean)
+        return queryset
 
 
 class RunViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows runs to be viewed or edited
     """
-    queryset = Run.objects.all()
     serializer_class = RunSerializer
+    def get_queryset(self):
+        """
+        Restricts queries by lab and/or
+        workday and/or a datetime range """
+        queryset = Run.objects.all()
+        filter_dirty = {
+            'lab__name' : self.request.query_params.get('lab', None),
+            'workday' : self.request.query_params.get('workday', None),
+            'workday__range' : (
+                        self.request.query_params.get('start_date', None),
+                        self.request.query_params.get('end_date', None),
+                        ),
+            'created__range' : (
+                        self.request.query_params.get('start_datetime', None),
+                        self.request.query_params.get('end_datetime', None),
+                        ),
+        }
+        filter_clean = {k: v for k, v in filter_dirty.items() if not (
+                        v==None or
+                        (isinstance(v, tuple) and (None in v))
+                )}
+
+        if len(filter_clean) is not 0:
+            queryset = queryset.filter(**filter_clean)
+        return queryset
+
+
+
 
 class CameraViewSet(viewsets.ModelViewSet):
     """

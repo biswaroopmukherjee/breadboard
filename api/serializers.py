@@ -67,7 +67,7 @@ class RunSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Run
         fields = ('url', 'id','created', 'runtime', 'parameters', 'bad_shot',
-                    'lab', 'dataset', 'images')
+                    'workday','lab', 'dataset', 'images')
 
 class DatasetSerializer(serializers.HyperlinkedModelSerializer):
     runs = serializers.HyperlinkedRelatedField(

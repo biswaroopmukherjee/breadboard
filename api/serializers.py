@@ -9,7 +9,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     userprofile = serializers.HyperlinkedRelatedField(
         queryset = UserProfile.objects.all(),
         many=False,
-        view_name='userprofile-detail'
+        view_name='userprofile-detail',
+        allow_null=True,
     )
     password = serializers.CharField(write_only=True)
 
@@ -32,7 +33,8 @@ class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
     user = serializers.HyperlinkedRelatedField(
         queryset = User.objects.all(),
         many=False,
-        view_name='user-detail'
+        view_name='user-detail',
+        allow_null=True,
     )
     class Meta:
         model = UserProfile
@@ -48,7 +50,7 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Image
         fields = ('url', 'id','name', 'created', 'notes', 'filepath', 'tags',
-                    'cropi', 'atom', 'odpath', 'total_atoms',
+                    'cropi', 'atom', 'odpath', 'total_atoms', 'settings',
                     'atomsperpixel', 'thumbnail', 'run', 'camera')
 
 class CameraSerializer(serializers.HyperlinkedModelSerializer):
@@ -62,18 +64,20 @@ class RunSerializer(serializers.HyperlinkedModelSerializer):
     images = serializers.HyperlinkedRelatedField(
         queryset = Image.objects.all(),
         view_name='image-detail',
-        many=True
+        many=True,
+        allow_null=True,
     )
     class Meta:
         model = Run
         fields = ('url', 'id','created', 'runtime', 'parameters', 'bad_shot',
-                    'workday','lab', 'dataset', 'images')
+                    'notes', 'workday','lab', 'dataset', 'images')
 
 class DatasetSerializer(serializers.HyperlinkedModelSerializer):
     runs = serializers.HyperlinkedRelatedField(
         queryset = Run.objects.all(),
         view_name='run-detail',
-        many=True
+        many=True,
+        allow_null=True,
     )
 
     class Meta:
@@ -86,7 +90,8 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
     datasets = serializers.HyperlinkedRelatedField(
         queryset = Dataset.objects.all(),
         view_name='dataset-detail',
-        many=True
+        many=True,
+        allow_null=True,
     )
     class Meta:
         model = Project
@@ -96,17 +101,20 @@ class LabSerializer(serializers.HyperlinkedModelSerializer):
     cameras = serializers.HyperlinkedRelatedField(
         queryset = Camera.objects.all(),
         view_name='camera-detail',
-        many=True
+        many=True,
+        allow_null=True,
     )
     projects = serializers.HyperlinkedRelatedField(
         queryset = Project.objects.all(),
         view_name='project-detail',
-        many=True
+        many=True,
+        allow_null=True,
     )
     userprofiles = serializers.HyperlinkedRelatedField(
         queryset = UserProfile.objects.all(),
         view_name='userprofile-detail',
-        many=True
+        many=True,
+        allow_null=True,
     )
     class Meta:
         model = Lab

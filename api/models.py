@@ -60,6 +60,7 @@ class Image(models.Model):
     odpath = models.TextField('filepath location for the od fits file on / in the MIT server', blank=True, null=True)
     atomsperpixel = models.TextField('filepath location for the atoms per pixel on / in the MIT server', blank=True, null=True)
     cropi = JSONField('cropi for the image', default=default_params, blank=True, null=True)
+    settings = JSONField('additional settings, such as Isat, fudge, subsample, etc', default=default_params, blank=True, null=True)
     # Choices for atoms in the image. Can be used for processing, and integration with camera UIs
     LITHIUM = 'Li'
     SODIUM = 'Na'
@@ -123,6 +124,7 @@ class Run(models.Model):
     workday = models.DateField('date of lab work. (often overflows through midnight)', default = datetime.date.today, blank=True )
     parameters = JSONField('Variables and parameters', default=default_params, blank=True, null=True)
     bad_shot = models.BooleanField('Was this run a bad shot?', default=False, blank=True)
+    notes = models.TextField('Run notes', default='', blank=True, null=True)
 
     # Relationships
     lab = models.ForeignKey('Lab', on_delete=models.PROTECT, related_name='runs', null=True, blank=True)

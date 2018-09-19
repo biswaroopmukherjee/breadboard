@@ -97,7 +97,7 @@ class RunViewSet(viewsets.ModelViewSet):
                         self.request.query_params.get('start_date', None),
                         self.request.query_params.get('end_date', None),
                         ),
-            'created__range' : (
+            'runtime__range' : (
                         self.request.query_params.get('start_datetime', None),
                         self.request.query_params.get('end_datetime', None),
                         ),

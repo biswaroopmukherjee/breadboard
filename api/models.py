@@ -43,6 +43,10 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+    class Meta:
+        verbose_name = 'userprofile'
+        verbose_name_plural =  'userprofiles'
+
 
 
 
@@ -80,9 +84,12 @@ class Image(models.Model):
     # relationships
     run = models.ForeignKey('Run', on_delete=models.PROTECT, blank=True, null=True, related_name='images')
     camera = models.ForeignKey('Camera', on_delete=models.PROTECT, blank=True, null=True, related_name='images')
+    lab = models.ForeignKey('Lab', on_delete=models.PROTECT, related_name='images', null=True, blank=True)
 
     class Meta:
         ordering = ['-created', 'name']
+        verbose_name = 'image'
+        verbose_name_plural =  'images'
 
     def __str__(self):
         return self.name
@@ -108,6 +115,8 @@ class Camera(models.Model):
 
     class Meta:
         ordering = ['-created','name']
+        verbose_name = 'camera'
+        verbose_name_plural =  'cameras'
 
     def __str__(self):
         return self.name
@@ -132,6 +141,8 @@ class Run(models.Model):
 
     class Meta:
         ordering = ['-runtime']
+        verbose_name = 'run'
+        verbose_name_plural =  'runs'
 
     def __str__(self):
         return self.runtime.strftime("%Y-%m-%d %H:%M:%S")
@@ -154,6 +165,8 @@ class Dataset(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = 'dataset'
+        verbose_name_plural =  'datasets'
 
     def __str__(self):
         return self.name
@@ -174,6 +187,8 @@ class Project(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = 'project'
+        verbose_name_plural =  'project'
 
     def __str__(self):
         return self.name
@@ -191,6 +206,8 @@ class Lab(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = 'lab'
+        verbose_name_plural =  'labs'
 
     def __str__(self):
         return self.name

@@ -5,11 +5,11 @@ from api.models import (
         Project, Lab, UserProfile
         )
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    userprofile = serializers.HyperlinkedRelatedField(
+class UserSerializer(serializers.ModelSerializer):
+    userprofile = serializers.PrimaryKeyRelatedField(
         queryset = UserProfile.objects.all(),
         many=False,
-        view_name='userprofile-detail',
+        #view_name='userprofile-detail',
         allow_null=True,
         default=[],
     )
@@ -30,11 +30,11 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'id', 'username', 'password', 'email', 'groups', 'userprofile')
 
 
-class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
-    user = serializers.HyperlinkedRelatedField(
+class UserProfileSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(
         queryset = User.objects.all(),
         many=False,
-        view_name='user-detail',
+        #view_name='user-detail',
         allow_null=True,
         default=[],
     )
@@ -43,26 +43,25 @@ class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'id', 'user', 'lab', 'description')
 
 
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
+class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ('url', 'id', 'name')
 
-class ImageSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Image
-        fields = ('url', 'id','name', 'created', 'notes', 'filepath', 'tags',
-                    'cropi', 'atom', 'odpath', 'total_atoms', 'settings',
-                    'atomsperpixel', 'thumbnail', 'run', 'camera')
-
-class CameraSerializer(serializers.HyperlinkedModelSerializer):
+class CameraSerializer(serializers.ModelSerializer):
     class Meta:
         model = Camera
         fields = ('url', 'id','name', 'sdk_id', 'created', 'magnification', 'axis',
                     'pixel_size', 'double_imaging', 'active', 'lab',
                     'calibration_dataset' )
 
-class RunSerializer(serializers.HyperlinkedModelSerializer):
+class RunSerializerList(serializers.ModelSerializer):
+    class Meta:
+        model = Run
+        fields = ('url', 'id','created', 'runtime', 'parameters', 'bad_shot',
+                    'notes', 'workday','lab', 'dataset')
+
+class RunSerializerDetail(serializers.ModelSerializer):
     images = serializers.HyperlinkedRelatedField(
         queryset = Image.objects.all(),
         view_name='image-detail',
@@ -74,10 +73,26 @@ class RunSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url', 'id','created', 'runtime', 'parameters', 'bad_shot',
                     'notes', 'workday','lab', 'dataset', 'images')
 
-class DatasetSerializer(serializers.HyperlinkedModelSerializer):
-    runs = serializers.HyperlinkedRelatedField(
+class ImageSerializerList(serializers.ModelSerializer):
+    class Meta:
+        model = Image
+        fields = ('url', 'id','name', 'created', 'notes', 'filepath', 'tags',
+                    'cropi', 'atom', 'odpath', 'total_atoms', 'settings',
+                    'atomsperpixel', 'thumbnail', 'run', 'camera')
+
+class ImageSerializerDetail(serializers.ModelSerializer):
+    run = RunSerializerDetail(many=False, read_only=True)
+    class Meta:
+        model = Image
+        fields = ('url', 'id','name', 'created', 'notes', 'filepath', 'tags',
+                    'cropi', 'atom', 'odpath', 'total_atoms', 'settings',
+                    'atomsperpixel', 'thumbnail', 'run', 'camera', 'lab')
+
+
+class DatasetSerializer(serializers.ModelSerializer):
+    runs = serializers.PrimaryKeyRelatedField(
         queryset = Run.objects.all(),
-        view_name='run-detail',
+        #view_name='run-detail',
         many=True,
         allow_null=True,
         default=[],
@@ -89,10 +104,10 @@ class DatasetSerializer(serializers.HyperlinkedModelSerializer):
                 'flag', 'tags', 'project', 'lab',
                 'runs')
 
-class ProjectSerializer(serializers.HyperlinkedModelSerializer):
-    datasets = serializers.HyperlinkedRelatedField(
+class ProjectSerializer(serializers.ModelSerializer):
+    datasets = serializers.PrimaryKeyRelatedField(
         queryset = Dataset.objects.all(),
-        view_name='dataset-detail',
+        #view_name='dataset-detail',
         many=True,
         allow_null=True,
         default=[],
@@ -101,29 +116,29 @@ class ProjectSerializer(serializers.HyperlinkedModelSerializer):
         model = Project
         fields = ('url', 'id','name', 'created', 'notes', 'lab', 'datasets')
 
-class LabSerializer(serializers.HyperlinkedModelSerializer):
-    cameras = serializers.HyperlinkedRelatedField(
+class LabSerializer(serializers.ModelSerializer):
+    cameras = serializers.PrimaryKeyRelatedField(
         queryset = Camera.objects.all(),
-        view_name='camera-detail',
+        #view_name='camera-detail',
         many=True,
         allow_null=True,
         default=[],
     )
-    projects = serializers.HyperlinkedRelatedField(
+    projects = serializers.PrimaryKeyRelatedField(
         queryset = Project.objects.all(),
-        view_name='project-detail',
+        #view_name='project-detail',
         many=True,
         allow_null=True,
         default=[],
     )
-    userprofiles = serializers.HyperlinkedRelatedField(
+    userprofiles = serializers.PrimaryKeyRelatedField(
         queryset = UserProfile.objects.all(),
-        view_name='userprofile-detail',
+        #view_name='userprofile-detail',
         many=True,
         allow_null=True,
         default=[],
     )
     class Meta:
         model = Lab
-        fields = ('url', 'id','name', 'created', 'info', 'photo', 'runs',
+        fields = ('url', 'id','name', 'created', 'info', 'photo',
                 'cameras', 'projects', 'userprofiles')

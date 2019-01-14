@@ -1,5 +1,6 @@
 import time
 from datetime import timedelta
+import re
 
 from django.shortcuts import render
 from rest_framework import viewsets
@@ -7,7 +8,7 @@ from django.contrib.auth.models import User, Group
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from rest_framework.generics import CreateAPIView
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.response import Response
 from django.core.signals import request_finished, request_started
 from django.utils.decorators import method_decorator
@@ -16,12 +17,15 @@ from django.utils.dateparse import parse_datetime
 
 from api.serializers import (
                 ImageSerializerList,
-                ImageSerializerDetail
+                ImageSerializerDetail,
+                ImageQuerySerializer,
+                IMAGE_QUERY_MODES,
         )
 
 from api.models import Image, Run, Lab
 
 DEFAULT_DELTA = 7 # default delta value: range = center +- delta
+
 
 class ImageViewSet(viewsets.ModelViewSet):
     """
@@ -40,88 +44,118 @@ class ImageViewSet(viewsets.ModelViewSet):
     # Cache page for the requested url
     @method_decorator(cache_page(60*60*2))
     def list(self, request):
-
         '''
-        TODO: validate request
-        (needs lab name, imagename, and created
-        or lab name
-        or labname and daterange)
+        List methods
         '''
         if request.query_params=={}:
             # Default request
             return super().list(request)
         else:
-            # List all images from a lab
-            if request.query_params.get('names') == None:
-                lab = Lab.objects.get(name=self.request.query_params.get('lab'))
+            # Parse query
+            imagequery = ImageQuerySerializer(data=request.query_params)
+            imagequery.is_valid(raise_exception=True)
+
+            query_mode = imagequery.validated_data.get('query_mode')
+            lab_name = imagequery.validated_data.get('lab')
+            namelist = imagequery.validated_data.get('namelist')
+            createdlist = imagequery.validated_data.get('createdlist')
+            datetimerange = (
+                        imagequery.validated_data.get('start_datetime'),
+                        imagequery.validated_data.get('end_datetime'),
+                    )
+            force_match = imagequery.validated_data.get('force_match')
+
+            if query_mode=='Quick':
+                # Quick mode: just get all images from a lab
+                lab = Lab.objects.get(name=lab_name)
                 queryset = lab.images.all()
                 # TODO: paginate request
                 context={'request': request}
                 serializer = ImageSerializerList(queryset, many=True, context=context)
                 return Response(serializer.data)
 
-            # Otherwise return images requested
-            else:
+            elif query_mode=='DateTimeRange':
+                # Names mode: get named images from a lab, and return with runtimes
+                lab = Lab.objects.get(name=lab_name)
+                queryset = lab.images.select_related('run').filter(created__range=datetimerange)
+                # TODO: paginate request
+                context={'request': request}
+                serializer = ImageSerializerDetail(queryset, many=True, context=context)
+                return Response(serializer.data)
 
-                # TODO: separate names into array imagenames[]
-                imagenames = [request.query_params.get('names', None)]
-                created_time = parse_datetime(self.request.query_params.get('created'))
+            elif query_mode=='Names':
+                # Names mode: get named images from a lab, and return with runtimes
+                lab = Lab.objects.get(name=lab_name)
+                queryset = lab.images.select_related('run').filter(name__in= namelist)
+                if queryset.count()<len(namelist):
+                    raise NotFound(detail='Not all images were found')
+                elif queryset.count()>len(namelist):
+                    raise NotFound(detail='Multiple images found with the same name. Try specifying created times.')
+                # TODO: paginate request
+                context={'request': request}
+                serializer = ImageSerializerDetail(queryset, many=True, context=context)
+                return Response(serializer.data)
+
+            elif query_mode=='NamesCreated':
+                # NamesCreated mode: Find images by name or if not found, associate run, and return with runtimes
+                created_times = [parse_datetime(dt) for dt in createdlist]
                 runtime_delta = timedelta(seconds=DEFAULT_DELTA)
-                runtime_range_search = (created_time-runtime_delta, created_time+runtime_delta)
+                runtime_range_search = [(created_time-runtime_delta, created_time+runtime_delta) for created_time in created_times]
 
-                all_images = []
-                # Note: handling param filtering on the client side
+                lab = Lab.objects.get(name=lab_name)
+                queryset = lab.images.select_related('run').filter(name__in= namelist)
 
-                # Single image, all params
-                for i in range(len(imagenames)):
+                # First try to find by imagenames
+                if not force_match and queryset.count()==len(namelist):
+                    context={'request': request}
+                    serializer = ImageSerializerDetail(queryset, many=True, context=context)
+                    return Response(serializer.data)
+                else:
+                    # Otherwise, if forcing matching, or some images not found,
+                    #   create them, and match runtimes
+                    all_images = []
+                    # Note: handling param filtering on the client side
 
-                    filter_clean = {
-                        'name' : imagenames[i],
-                        'lab__name' : self.request.query_params.get('lab', None),
-                        'created' : self.request.query_params.get('created', None)
-                    }
-                    try:
-                        img = Image.objects.get(**filter_clean)
-                        if img.run == None:
-                            print('No run attached: trying to find it')
+                    for i in range(len(namelist)):
+                        try:
+                            img = Image.objects.get(
+                                name= namelist[i],
+                                lab__name= lab_name,
+                                created= createdlist[i]
+                            )
+                            if img.run == None or force_match:
+                                print('No run attached or forcing matching: trying to find it')
+                                try:
+                                    found_run = Run.objects.get(runtime__range=runtime_range_search[i])
+                                    img.run = found_run
+                                    print('Run attached to image')
+                                    img.save()
+                                except Run.DoesNotExist:
+                                    raise NotFound(detail='warning: no run found')
+                                except Run.MultipleObjectsReturned:
+                                    raise NotFound(detail='warning: many runs found')
+
+                        except Image.DoesNotExist:
+                            # if image not found, make a new image:
+                            print('Creating new image object')
+                            img = lab.images.create(
+                                name = namelist[i],
+                                created = createdlist[i],
+                                )
                             try:
-                                found_run = Run.objects.get(runtime__range=runtime_range_search)
+                                found_run = Run.objects.get(runtime__range=runtime_range_search[i])
                                 img.run = found_run
-                                print('Run attached to image')
                                 img.save()
                             except Run.DoesNotExist:
-                                # TODO: handle this better
-                                print('warning: no run found')
+                                raise NotFound(detail='warning: no run found')
                             except Run.MultipleObjectsReturned:
-                                # TODO: handle this better
-                                print('warning: many runs found')
+                                raise NotFound(detail='warning: many runs found')
 
-                    except Image.DoesNotExist:
-                        # if image not found, make a new image:
-                        print('Creating new image object')
-                        lab = Lab.objects.get(name=filter_clean.get('lab__name'))
+                        except Image.MultipleObjectsReturned:
+                            raise NotFound(detail='warning: many images found')
 
-                        img = lab.images.create(
-                            name = filter_clean.get('name'),
-                            created = filter_clean.get('created'),
-                            )
-                        try:
-                            found_run = Run.objects.get(runtime__range=runtime_range_search)
-                            img.run = found_run
-                            img.save()
-                        except Run.DoesNotExist:
-                            # TODO: handle this better
-                            print('warning: no run found')
-                        except Run.MultipleObjectsReturned:
-                            # TODO: handle this better
-                            print('warning: many runs found')
+                        all_images = all_images + [img]
 
-                    except Image.MultipleObjectsReturned:
-                        #todo: handle better
-                        print('warning: many images found with the same name')
-
-                    all_images = all_images + [img]
-
-                context={'request': request}
-                serializer = ImageSerializerDetail(all_images, many=True, context=context)
-                return Response(serializer.data)
+                    context={'request': request}
+                    serializer = ImageSerializerDetail(all_images, many=True, context=context)
+                    return Response(serializer.data)

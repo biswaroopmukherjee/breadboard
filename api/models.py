@@ -20,7 +20,6 @@ Defaults for foreign keys. Dummies are necessary because the true run objects
 will be created simultaneously with the images
 """
 DEFAULT_RUN = 1
-DEFAULT_CAMERA = 1
 DEFAULT_LAB = 1
 DEFAULT_DATASET = 1
 DEFAULT_PROJECT = 1
@@ -52,7 +51,7 @@ class UserProfile(models.Model):
 
 class Image(models.Model):
     """
-    Class for images taken by the cameras in the experiment.
+    Class for images taken in the experiment.
     """
     name = models.CharField(max_length=200)
     created = models.DateTimeField('time created', default=timezone.now, blank=True)
@@ -65,6 +64,7 @@ class Image(models.Model):
     atomsperpixel = models.TextField('filepath location for the atoms per pixel on / in the MIT server', blank=True, null=True)
     cropi = JSONField('cropi for the image', default=default_params, blank=True, null=True)
     settings = JSONField('additional settings, such as Isat, fudge, subsample, etc', default=default_params, blank=True, null=True)
+    pixel_size = models.FloatField(default=1, blank=True, null=True)
     # Choices for atoms in the image. Can be used for processing, and integration with camera UIs
     LITHIUM = 'Li'
     SODIUM = 'Na'
@@ -83,7 +83,6 @@ class Image(models.Model):
 
     # relationships
     run = models.ForeignKey('Run', on_delete=models.PROTECT, blank=True, null=True, related_name='images')
-    camera = models.ForeignKey('Camera', on_delete=models.PROTECT, blank=True, null=True, related_name='images')
     lab = models.ForeignKey('Lab', on_delete=models.PROTECT, related_name='images', null=True, blank=True)
 
     class Meta:
@@ -95,31 +94,6 @@ class Image(models.Model):
         return self.name
 
 
-
-class Camera(models.Model):
-    """
-    Cameras in the experiment
-    """
-    name = models.CharField(max_length=100)
-    sdk_id = models.CharField('a camera identifier for the computer sdk', max_length=100,  blank=True, null=True)
-    created = models.DateTimeField('datetime camera was created', default=timezone.now, blank=True)
-    magnification = models.FloatField(default=1, blank=True, null=True)
-    axis = models.CharField('axis image was taken from', max_length = 100, blank=True, null=True)
-    pixel_size = models.FloatField(default=1, blank=True, null=True)
-    double_imaging = models.BooleanField(default=False, blank=True)
-    active = models.BooleanField(default=True, blank=True)
-
-    # Relationships
-    calibration_dataset = models.ForeignKey('Dataset', on_delete=models.SET_NULL, blank=True, null=True)
-    lab = models.ForeignKey('Lab', on_delete=models.PROTECT, related_name='cameras', null=True, blank=True)
-
-    class Meta:
-        ordering = ['-created','name']
-        verbose_name = 'camera'
-        verbose_name_plural =  'cameras'
-
-    def __str__(self):
-        return self.name
 
 
 

@@ -18,7 +18,6 @@ from api.serializers import (
                 UserProfileSerializer,
                 ImageSerializerList,
                 ImageSerializerDetail,
-                CameraSerializer,
                 RunSerializerList,
                 RunSerializerDetail,
                 DatasetSerializer,
@@ -26,7 +25,7 @@ from api.serializers import (
                 LabSerializer
         )
 
-from api.models import UserProfile, Image, Camera, Run, Dataset, Project, Lab
+from api.models import UserProfile, Image, Run, Dataset, Project, Lab
 
 
 
@@ -59,14 +58,6 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-
-
-class CameraViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows cameras to be viewed or edited
-    """
-    queryset = Camera.objects.all()
-    serializer_class = CameraSerializer
 
 class DatasetViewSet(viewsets.ModelViewSet):
     """

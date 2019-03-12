@@ -3,7 +3,7 @@ import re
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from api.models import (
-        Image, Camera, Run, Dataset,
+        Image, Run, Dataset,
         Project, Lab, UserProfile
         )
 
@@ -57,12 +57,6 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ('url', 'id', 'name')
 
-class CameraSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Camera
-        fields = ('url', 'id','name', 'sdk_id', 'created', 'magnification', 'axis',
-                    'pixel_size', 'double_imaging', 'active', 'lab',
-                    'calibration_dataset' )
 
 class DatasetSerializer(serializers.ModelSerializer):
     runs = serializers.PrimaryKeyRelatedField(
@@ -92,13 +86,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ('url', 'id','name', 'created', 'notes', 'lab', 'datasets')
 
 class LabSerializer(serializers.ModelSerializer):
-    cameras = serializers.PrimaryKeyRelatedField(
-        queryset = Camera.objects.all(),
-        #view_name='camera-detail',
-        many=True,
-        allow_null=True,
-        default=[],
-    )
     projects = serializers.PrimaryKeyRelatedField(
         queryset = Project.objects.all(),
         #view_name='project-detail',
@@ -116,7 +103,7 @@ class LabSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lab
         fields = ('url', 'id','name', 'created', 'info', 'photo',
-                'cameras', 'projects', 'userprofiles')
+                'projects', 'userprofiles')
 
 
 
@@ -144,7 +131,7 @@ class ImageSerializerList(serializers.ModelSerializer):
         model = Image
         fields = ('url', 'id','name', 'created', 'notes', 'filepath', 'tags',
                     'cropi', 'atom', 'odpath', 'total_atoms', 'settings',
-                    'atomsperpixel', 'thumbnail', 'run', 'camera')
+                    'atomsperpixel', 'thumbnail', 'run', 'pixel_size')
 
 class ImageSerializerDetail(serializers.ModelSerializer):
     run = RunSerializerList(many=False, read_only=True)
@@ -152,7 +139,7 @@ class ImageSerializerDetail(serializers.ModelSerializer):
         model = Image
         fields = ('url', 'id','name', 'created', 'notes', 'filepath', 'tags',
                     'cropi', 'atom', 'odpath', 'total_atoms', 'settings',
-                    'atomsperpixel', 'thumbnail', 'run', 'camera')
+                    'atomsperpixel', 'thumbnail', 'run', 'pixel_size')
 
 
 

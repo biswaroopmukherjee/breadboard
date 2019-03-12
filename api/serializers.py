@@ -155,6 +155,22 @@ class ImageQuerySerializer(serializers.Serializer):
     query_mode = serializers.ChoiceField(choices=IMAGE_QUERY_MODES, default='Quick')
     force_match = serializers.BooleanField(default=False)
 
+    # parameters for posting image information
+    postparams = ['notes', 'filepath', 'tags',
+                'cropi', 'atom', 'odpath', 'total_atoms', 'settings',
+                'atomsperpixel', 'thumbnail', 'pixel_size']
+    notes = serializers.CharField(required=False)
+    filepath = serializers.CharField(required=False)
+    tags = serializers.JSONField(required=False)
+    thumbnail = serializers.CharField(required=False)
+    total_atoms = serializers.CharField(required=False)
+    odpath = serializers.CharField(required=False)
+    atomsperpixel = serializers.CharField(required=False)
+    cropi = serializers.JSONField(required=False)
+    settings = serializers.JSONField(required=False)
+    pixel_size = serializers.FloatField(required=False)
+    atom = serializers.CharField(required=False)
+
     def validate(self, data):
         DateTimeRange = False
         NamesCreated = False
@@ -191,6 +207,13 @@ class ImageQuerySerializer(serializers.Serializer):
                 DateTimeRange = True
                 data['query_mode'] = 'DateTimeRange'
 
+        # # Post parameters
+        # l = [out.get(param) for param in postparams] # find if any of the params have been supplied
+        # if not l.count(None) == len(l) and (',' in  data['names']):
+        #     # if we sent a param with multiple images
+        #     print('Warning: applying a single param to multiple images')
+
+        # Validation errors
         if DateTimeRange and NamesCreated:
             raise serializers.ValidationError("Use either a list of names or a datetime range to find images")
 

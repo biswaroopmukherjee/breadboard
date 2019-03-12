@@ -66,7 +66,7 @@ def handle_image_query(request, method):
         return Response(serializer.data)
 
     elif query_mode=='Names':
-        # Names mode: get named images from a lab, and return with runtimes
+        # Names mode: get named images from a lab, and return with runtimes attached
         lab = Lab.objects.get(name=lab_name)
         queryset = lab.images.select_related('run').filter(name__in= namelist)
         if queryset.count()<len(namelist):
@@ -80,6 +80,7 @@ def handle_image_query(request, method):
 
     elif query_mode=='NamesCreated':
         # NamesCreated mode: Find images by name or if not found, associate run, and return with runtimes
+        # Note: only this mode can create an image
         created_times = [parse_datetime(dt) for dt in createdlist]
         runtime_delta = timedelta(seconds=DEFAULT_DELTA)
         runtime_range_search = [(created_time-runtime_delta, created_time+runtime_delta) for created_time in created_times]
@@ -123,6 +124,17 @@ def handle_image_query(request, method):
                     img = lab.images.create(
                         name = namelist[i],
                         created = createdlist[i],
+                        notes = imagequery.validated_data.get('notes'),
+                        filepath = imagequery.validated_data.get('filepath'),
+                        tags = imagequery.validated_data.get('tags'),
+                        thumbnail = imagequery.validated_data.get('thumbnail'),
+                        total_atoms = imagequery.validated_data.get('total_atoms'),
+                        odpath = imagequery.validated_data.get('odpath'),
+                        atomsperpixel = imagequery.validated_data.get('atomsperpixel'),
+                        cropi = imagequery.validated_data.get('cropi'),
+                        settings = imagequery.validated_data.get('settings'),
+                        pixel_size = imagequery.validated_data.get('pixel_size'),
+                        atom = imagequery.validated_data.get('atom'),
                         )
                     try:
                         found_run = Run.objects.get(runtime__range=runtime_range_search[i])

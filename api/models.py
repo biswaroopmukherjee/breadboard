@@ -79,6 +79,7 @@ class Image(models.Model):
         max_length=2,
         choices=ATOM_CHOICES,
         default=LITHIUM,
+        null=True
     )
 
     # relationships

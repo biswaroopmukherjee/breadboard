@@ -1,7 +1,7 @@
 # breadboard
 An API for the Zwierlein Group
 
-How it works
+How does it work?
 ---
 
 Breadboard is a [RESTful Web API](https://en.wikipedia.org/wiki/Representational_state_transfer). In short, it provides a bare-bones web-based interface between a database of experimental parameters, and you. The name 'breadboard' refers to the idea of a configurable platform to build custom devices: you can use breadboard to build your favorite UIs, from websites to analysis tools.
@@ -18,7 +18,7 @@ We typically analyze images. Every experimental run generates parameters and ima
 What kinds of metadata can we store?
 ---
 
-Aside from the basic experimental runtime, and imagenames, you can store notes, settings, crop regions, pixel sizes, bad shot labels, 
+Aside from the basic experimental runtime, and imagenames, you can store notes, settings, crop regions, pixel sizes, bad shot labels, datasets, filepaths to image files, and more.
 
 
 How do I use the API?
@@ -34,4 +34,12 @@ I'm still writing documentation for the HTTP endpoints.
 How can I host breadboard?
 ---
 
-This project is currently hosted on google cloud. 
+This project is currently hosted on google cloud. You can run your own server locally by cloning this repo and running 
+
+```sh
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver
+```
+
+The server will run on `localhost:8000` or something similar. Note: you need to connect your own Postgres database in order for this to work. Docs coming soon.

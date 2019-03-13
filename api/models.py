@@ -65,7 +65,7 @@ class Image(models.Model):
     cropi = JSONField('cropi for the image', default=default_params, blank=True, null=True)
     settings = JSONField('additional settings, such as Isat, fudge, subsample, etc', default=default_params, blank=True, null=True)
     pixel_size = models.FloatField(default=1, blank=True, null=True)
-    bad_shot = models.BooleanField('Was this image a bad shot?', default=False, blank=True)
+    bad_shot = models.NullBooleanField('Was this image a bad shot?', default=False, blank=True)
     # Choices for atoms in the image. Can be used for processing, and integration with camera UIs
     LITHIUM = 'Li'
     SODIUM = 'Na'

@@ -170,7 +170,7 @@ class ImageQuerySerializer(serializers.Serializer):
     settings = serializers.JSONField(required=False)
     pixel_size = serializers.FloatField(required=False)
     atom = serializers.CharField(required=False)
-    bad_shot = serializers.BooleanField(required=False)
+    bad_shot = serializers.NullBooleanField(required=False)
 
     def validate(self, data):
         DateTimeRange = False

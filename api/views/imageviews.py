@@ -135,6 +135,7 @@ def handle_image_query(request, method):
                         settings = imagequery.validated_data.get('settings'),
                         pixel_size = imagequery.validated_data.get('pixel_size'),
                         atom = imagequery.validated_data.get('atom'),
+                        bad_shot = imagequery.validated_data.get('bad_shot')
                         )
                     try:
                         found_run = Run.objects.get(runtime__range=runtime_range_search[i])

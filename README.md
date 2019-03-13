@@ -23,7 +23,10 @@ Aside from the basic experimental runtime, and imagenames, you can store notes, 
 
 How do I use the API?
 ---
-For now, you can use [breadboard-python-client](https://github.com/biswaroopmukherjee/breadboard-python-client) to browse the API, and [breadboard-cicero](https://github.com/biswaroopmukherjee/breadboard-cicero) to write experimental parameters from Cicero.
+
+* If you want to use the API directly, read [the API docs](https://documenter.getpostman.com/view/5261788/RWaHxpKC). This is ideal if you're not using python.
+* If you want to use a python client, use [breadboard-python-client](https://github.com/biswaroopmukherjee/breadboard-python-client)
+* To write Cicero experimental parameters, use [breadboard-cicero](https://github.com/biswaroopmukherjee/breadboard-cicero).
 
 
 I don't want to use python. What do I do?
@@ -34,7 +37,7 @@ I'm still writing documentation for the HTTP endpoints.
 How can I host breadboard?
 ---
 
-This project is currently hosted on google cloud. You can run your own server locally by cloning this repo and running 
+This project is currently hosted on google cloud. You can run your own server locally by cloning this repo and running
 
 ```sh
 python manage.py makemigrations

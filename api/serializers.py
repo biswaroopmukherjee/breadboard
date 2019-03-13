@@ -111,7 +111,7 @@ class LabSerializer(serializers.ModelSerializer):
 class RunSerializerList(serializers.ModelSerializer):
     class Meta:
         model = Run
-        fields = ('url', 'id','created', 'runtime', 'parameters', 'bad_shot',
+        fields = ('url', 'id','created', 'runtime', 'parameters',
                     'notes', 'workday', 'dataset')
 
 class RunSerializerDetail(serializers.ModelSerializer):
@@ -123,7 +123,7 @@ class RunSerializerDetail(serializers.ModelSerializer):
     )
     class Meta:
         model = Run
-        fields = ('url', 'id','created', 'runtime', 'parameters', 'bad_shot',
+        fields = ('url', 'id','created', 'runtime', 'parameters',
                     'notes', 'workday','lab', 'dataset', 'images')
 
 class ImageSerializerList(serializers.ModelSerializer):
@@ -131,7 +131,7 @@ class ImageSerializerList(serializers.ModelSerializer):
         model = Image
         fields = ('url', 'id','name', 'created', 'notes', 'filepath', 'tags',
                     'cropi', 'atom', 'odpath', 'total_atoms', 'settings',
-                    'atomsperpixel', 'thumbnail', 'run', 'pixel_size')
+                    'atomsperpixel', 'thumbnail', 'run', 'pixel_size','bad_shot')
 
 class ImageSerializerDetail(serializers.ModelSerializer):
     run = RunSerializerList(many=False, read_only=True)
@@ -139,7 +139,7 @@ class ImageSerializerDetail(serializers.ModelSerializer):
         model = Image
         fields = ('url', 'id','name', 'created', 'notes', 'filepath', 'tags',
                     'cropi', 'atom', 'odpath', 'total_atoms', 'settings',
-                    'atomsperpixel', 'thumbnail', 'run', 'pixel_size')
+                    'atomsperpixel', 'thumbnail', 'run', 'pixel_size','bad_shot')
 
 
 
@@ -158,7 +158,7 @@ class ImageQuerySerializer(serializers.Serializer):
     # parameters for posting image information
     postparams = ['notes', 'filepath', 'tags',
                 'cropi', 'atom', 'odpath', 'total_atoms', 'settings',
-                'atomsperpixel', 'thumbnail', 'pixel_size']
+                'atomsperpixel', 'thumbnail', 'pixel_size','bad_shot']
     notes = serializers.CharField(required=False)
     filepath = serializers.CharField(required=False)
     tags = serializers.JSONField(required=False)
@@ -170,6 +170,7 @@ class ImageQuerySerializer(serializers.Serializer):
     settings = serializers.JSONField(required=False)
     pixel_size = serializers.FloatField(required=False)
     atom = serializers.CharField(required=False)
+    bad_shot = serializers.BooleanField(required=False)
 
     def validate(self, data):
         DateTimeRange = False

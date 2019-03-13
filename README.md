@@ -1,8 +1,6 @@
 # breadboard
 An API for the Zwierlein Group
 
-===
-
 How it works
 ---
 

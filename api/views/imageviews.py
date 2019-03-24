@@ -116,7 +116,11 @@ def handle_image_query(request, method):
                         except Run.DoesNotExist:
                             raise NotFound(detail='warning: no run found')
                         except Run.MultipleObjectsReturned:
-                            raise NotFound(detail='warning: many runs found')
+                            found_runs = Run.objects.filter(runtime__range=runtime_range_search[i])
+                            img.run = found_runs[0]
+                            print('Run attached to image')
+                            img.save()
+                            # raise NotFound(detail='warning: many runs found')
 
                 except Image.DoesNotExist:
                     # if image not found, make a new image:

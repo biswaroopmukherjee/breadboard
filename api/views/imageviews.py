@@ -3,18 +3,21 @@ from datetime import timedelta
 import re
 
 from django.shortcuts import render
-from rest_framework import viewsets
 from django.contrib.auth.models import User, Group
 from django.shortcuts import get_object_or_404
+from django.core.signals import request_finished, request_started
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.utils.dateparse import parse_datetime
+
+from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.generics import CreateAPIView
 from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.response import Response
-from django.core.signals import request_finished, request_started
-from django.utils.decorators import method_decorator
+from rest_framework.settings import api_settings
 from rest_framework.decorators import action
-from django.views.decorators.cache import cache_page
-from django.utils.dateparse import parse_datetime
+
 
 from api.serializers import (
                 ImageSerializerList,
@@ -28,7 +31,29 @@ from api.models import Image, Run, Lab
 DEFAULT_DELTA = 7 # default delta value: range = center +- delta
 
 
+# The style to use for queryset pagination.
+pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+paginator = pagination_class()
+
+
+
+def serialize_and_paginate_queryset(queryset, request, mode='detail'):
+    # Paginate request and then serialize it 
+    page = paginator.paginate_queryset(queryset, request)
+    context={'request': request}
+
+    if mode=='list':        serializer_function = ImageSerializerList
+    elif mode=='detail':    serializer_function = ImageSerializerDetail
+
+    if page is not None:
+        serializer = serializer_function(page, many=True, context=context)
+        return paginator.get_paginated_response(serializer.data)
+    serializer = serializer_function(queryset, many=True, context=context)
+    return Response(serializer.data)
+
+
 def handle_image_query(request, method):
+
     # Parse query
     if method=='GET':
         requestdata = request.query_params
@@ -47,23 +72,18 @@ def handle_image_query(request, method):
             )
     force_match = imagequery.validated_data.get('force_match')
 
+    lab = Lab.objects.get(name=lab_name)
+
     if query_mode=='Quick':
         # Quick mode: just get all images from a lab
-        lab = Lab.objects.get(name=lab_name)
         queryset = lab.images.all()
-        # TODO: paginate request
-        context={'request': request}
-        serializer = ImageSerializerList(queryset, many=True, context=context)
-        return Response(serializer.data)
+        return serialize_and_paginate_queryset(queryset, request, mode='list')
 
     elif query_mode=='DateTimeRange':
         # Names mode: get named images from a lab, and return with runtimes
         lab = Lab.objects.get(name=lab_name)
         queryset = lab.images.select_related('run').filter(created__range=datetimerange)
-        # TODO: paginate request
-        context={'request': request}
-        serializer = ImageSerializerDetail(queryset, many=True, context=context)
-        return Response(serializer.data)
+        return serialize_and_paginate_queryset(queryset, request, mode='detail')
 
     elif query_mode=='Names':
         # Names mode: get named images from a lab, and return with runtimes attached
@@ -73,10 +93,7 @@ def handle_image_query(request, method):
             raise NotFound(detail='Not all images were found')
         elif queryset.count()>len(namelist):
             raise NotFound(detail='Multiple images found with the same name. Try specifying created times.')
-        # TODO: paginate request
-        context={'request': request}
-        serializer = ImageSerializerDetail(queryset, many=True, context=context)
-        return Response(serializer.data)
+        return serialize_and_paginate_queryset(queryset, request, mode='detail')
 
     elif query_mode=='NamesCreated':
         # NamesCreated mode: Find images by name or if not found, associate run, and return with runtimes
@@ -90,9 +107,8 @@ def handle_image_query(request, method):
 
         # First try to find by imagenames
         if not force_match and queryset.count()==len(namelist):
-            context={'request': request}
-            serializer = ImageSerializerDetail(queryset, many=True, context=context)
-            return Response(serializer.data)
+            return serialize_and_paginate_queryset(queryset, request, mode='detail')
+
         else:
             # Otherwise, if forcing matching, or some images not found,
             #   create them, and match runtimes
@@ -100,7 +116,7 @@ def handle_image_query(request, method):
             # Note: handling param filtering on the client side
 
             for i in range(len(namelist)):
-                try:
+                try: # to find the image
                     img = Image.objects.get(
                         name= namelist[i],
                         lab__name= lab_name,
@@ -124,6 +140,7 @@ def handle_image_query(request, method):
 
                 except Image.DoesNotExist:
                     # if image not found, make a new image:
+                    # TODO: use serializer for this part
                     print('Creating new image object')
                     img = lab.images.create(
                         name = namelist[i],
@@ -146,7 +163,9 @@ def handle_image_query(request, method):
                         img.run = found_run
                         img.save()
                     except Run.DoesNotExist:
-                        raise NotFound(detail='warning: no run found')
+                        img.run = None
+                        print('warning: new image has no run attached')
+                        # raise NotFound(detail='warning: no run found')
                     except Run.MultipleObjectsReturned:
                         raise NotFound(detail='warning: many runs found')
 
@@ -155,10 +174,8 @@ def handle_image_query(request, method):
 
                 all_images = all_images + [img]
 
-            context={'request': request}
-            serializer = ImageSerializerDetail(all_images, many=True, context=context)
-            return Response(serializer.data)
 
+            return serialize_and_paginate_queryset(all_images, request, mode='detail')
 
 
 

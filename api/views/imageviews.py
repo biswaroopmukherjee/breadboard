@@ -67,7 +67,6 @@ def handle_image_query(request, method):
         if page is not None:
             serializer = ImageSerializerList(page, many=True, context=context)
             return paginator.get_paginated_response(serializer.data)
-        # Otherwise don't
         serializer = ImageSerializerList(queryset, many=True, context=context)
         return Response(serializer.data)
 
@@ -81,7 +80,6 @@ def handle_image_query(request, method):
         if page is not None:
             serializer = ImageSerializerDetail(page, many=True, context=context)
             return paginator.get_paginated_response(serializer.data)
-        # Otherwise don't
         serializer = ImageSerializerDetail(queryset, many=True, context=context)
         return Response(serializer.data)
 
@@ -99,7 +97,6 @@ def handle_image_query(request, method):
         if page is not None:
             serializer = ImageSerializerDetail(page, many=True, context=context)
             return paginator.get_paginated_response(serializer.data)
-        # Otherwise don't
         serializer = ImageSerializerDetail(queryset, many=True, context=context)
         return Response(serializer.data)
 
@@ -121,8 +118,6 @@ def handle_image_query(request, method):
             if page is not None: 
                 serializer = ImageSerializerDetail(page, many=True, context=context)
                 return paginator.get_paginated_response(serializer.data)
-
-            # Otherwise don't
             serializer = ImageSerializerDetail(queryset, many=True, context=context)
             
             return Response(serializer.data)
@@ -197,11 +192,8 @@ def handle_image_query(request, method):
             if page is not None:
                 serializer = ImageSerializerDetail(page, many=True, context=context)
                 return paginator.get_paginated_response(serializer.data)
-            # Otherwise don't
             serializer = ImageSerializerDetail(all_images, many=True, context=context)
             return Response(serializer.data)
-
-
 
 
 

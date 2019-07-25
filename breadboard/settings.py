@@ -13,8 +13,9 @@ ALLOWED_HOSTS = [
     'localhost',
     'breadboard-215702.appspot.com',
     'breadboard.biswaroop.me',
+    'fermi3.com',
+    '*.fermi3.com'
 ]
-
 
 # Application definition
 
@@ -27,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_filters',
     'corsheaders',
     'api.apps.ApiConfig',
 ]
@@ -137,6 +139,7 @@ REST_FRAMEWORK = {
         'anon': '100/hour',
         'user': '100/second'
     },
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 200,
 }

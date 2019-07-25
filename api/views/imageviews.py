@@ -159,15 +159,13 @@ def handle_image_query(request, method):
                         bad_shot = imagequery.validated_data.get('bad_shot')
                         )
                     try:
-                        found_run = Run.objects.get(runtime__range=runtime_range_search[i])
-                        img.run = found_run
+                        found_run = Run.objects.filter(runtime__range=runtime_range_search[i])
+                        img.run = found_run[0]
                         img.save()
                     except Run.DoesNotExist:
                         img.run = None
                         print('warning: new image has no run attached')
                         # raise NotFound(detail='warning: no run found')
-                    except Run.MultipleObjectsReturned:
-                        raise NotFound(detail='warning: many runs found')
 
                 except Image.MultipleObjectsReturned:
                     raise NotFound(detail='warning: many images found')

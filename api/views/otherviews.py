@@ -11,6 +11,9 @@ from rest_framework.response import Response
 from django.core.signals import request_finished, request_started
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 from api.serializers import (
                 GroupSerializer,
@@ -65,6 +68,9 @@ class DatasetViewSet(viewsets.ModelViewSet):
     """
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
+    filterset_fields = ('name', 'lab__name')
+    search_fields = ('name', 'notes')
 
 class ProjectViewSet(viewsets.ModelViewSet):
     """
@@ -72,6 +78,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
+    filterset_fields = ('name', 'lab__name')
+    search_fields = ('name', 'notes')
 
 class LabViewSet(viewsets.ModelViewSet):
     """
@@ -79,3 +88,6 @@ class LabViewSet(viewsets.ModelViewSet):
     """
     queryset = Lab.objects.all()
     serializer_class = LabSerializer
+    filter_backends = (filters.SearchFilter, DjangoFilterBackend)
+    filterset_fields = ('name',)
+    search_fields = ('name',)

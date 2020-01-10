@@ -103,10 +103,11 @@ def handle_image_query(request, method):
         runtime_range_search = [(created_time-runtime_delta, created_time+runtime_delta) for created_time in created_times]
 
         lab = Lab.objects.get(name=lab_name)
-        queryset = lab.images.select_related('run').filter(name__in= namelist)
+        queryset = lab.images.select_related('run').filter(name__in=namelist)
 
         # First try to find by imagenames
         if not force_match and queryset.count()==len(namelist):
+            print('Images found. Not force matching')
             return serialize_and_paginate_queryset(queryset, request, mode='detail')
 
         else:
@@ -116,29 +117,20 @@ def handle_image_query(request, method):
             # Note: handling param filtering on the client side
 
             for i in range(len(namelist)):
-                try: # to find the image
-                    img = Image.objects.get(
-                        name= namelist[i],
-                        lab__name= lab_name,
-                        created= createdlist[i]
-                    )
-                    if img.run == None or force_match:
-                        print('No run attached or forcing matching: trying to find it')
-                        try:
-                            found_run = Run.objects.get(runtime__range=runtime_range_search[i])
-                            img.run = found_run
-                            print('Run attached to image')
-                            img.save()
-                        except Run.DoesNotExist:
-                            raise NotFound(detail='warning: no run found')
-                        except Run.MultipleObjectsReturned:
-                            found_runs = Run.objects.filter(runtime__range=runtime_range_search[i])
-                            img.run = found_runs[0]
-                            print('Run attached to image')
-                            img.save()
-                            # raise NotFound(detail='warning: many runs found')
-
-                except Image.DoesNotExist:
+                # I used to have a try/except here, now I use count() to check the queryset
+                matched_images = Image.objects.filter(
+                    name= namelist[i],
+                    lab__name= lab_name,
+                    created= createdlist[i]
+                )
+                print(matched_images.count())
+                numimages = matched_images.count()
+                if numimages>1:
+                    print('Warning: multiple images found for imagename = ' + namelist[i])
+                    # Remove copies
+                    for img in matched_images[1:]:
+                        img.delete()
+                elif numimages==0:
                     # if image not found, make a new image:
                     # TODO: use serializer for this part
                     print('Creating new image object')
@@ -158,17 +150,26 @@ def handle_image_query(request, method):
                         atom = imagequery.validated_data.get('atom'),
                         bad_shot = imagequery.validated_data.get('bad_shot')
                         )
-                    try:
-                        found_run = Run.objects.filter(runtime__range=runtime_range_search[i])
-                        img.run = found_run[0]
-                        img.save()
-                    except Run.DoesNotExist:
-                        img.run = None
-                        print('warning: new image has no run attached')
-                        # raise NotFound(detail='warning: no run found')
+                    
+                # always pick the first result for multiple images
+                img = matched_images[0]
 
-                except Image.MultipleObjectsReturned:
-                    raise NotFound(detail='warning: many images found')
+
+                # attach a run to the image                    
+                try:
+                    found_run = Run.objects.get(runtime__range=runtime_range_search[i])
+                    img.run = found_run
+                    print('Run attached to image')
+                    img.save()
+                except Run.DoesNotExist:
+                    print('Warning: no run found')
+                    # raise NotFound(detail='warning: no run found')
+                except Run.MultipleObjectsReturned:
+                    found_runs = Run.objects.filter(runtime__range=runtime_range_search[i])
+                    img.run = found_runs[0]
+                    print('Run attached to image')
+                    img.save()
+                    # raise NotFound(detail='warning: many runs found')
 
                 all_images = all_images + [img]
 

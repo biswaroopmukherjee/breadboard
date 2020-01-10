@@ -31,9 +31,12 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'api.apps.ApiConfig',
+    'channels',
+    'django_eventstream',
 ]
 
 MIDDLEWARE = [
+    'django_grip.GripMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -68,6 +71,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'breadboard.wsgi.application'
+ASGI_APPLICATION = 'breadboard.routing.application'
 
 
 DATABASES = {

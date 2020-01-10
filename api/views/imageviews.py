@@ -1,6 +1,8 @@
 import time
 from datetime import timedelta
 import re
+from django_eventstream import send_event
+
 
 from django.shortcuts import render
 from django.contrib.auth.models import User, Group
@@ -96,6 +98,7 @@ def handle_image_query(request, method):
         return serialize_and_paginate_queryset(queryset, request, mode='detail')
 
     elif query_mode=='NamesCreated':
+
         # NamesCreated mode: Find images by name or if not found, associate run, and return with runtimes
         # Note: only this mode can create an image
         created_times = [parse_datetime(dt) for dt in createdlist]
@@ -134,6 +137,7 @@ def handle_image_query(request, method):
                     # if image not found, make a new image:
                     # TODO: use serializer for this part
                     print('Creating new image object')
+                    send_event('main', 'message', {'text': 'new image'})
                     img = lab.images.create(
                         name = namelist[i],
                         created = createdlist[i],

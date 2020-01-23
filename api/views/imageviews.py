@@ -28,6 +28,18 @@ from api.serializers import (
 
 from api.models import Image, Run, Lab
 
+from breadboard.secrets import secrets as secrets
+
+import pusher
+
+pusher_client = pusher.Pusher(
+  app_id=secrets.PUSHER_APP_ID,
+  key=secrets.PUSHER_KEY,
+  secret=secrets.PUSHER_SECRET,
+  cluster='us2',
+  ssl=True
+)
+
 DEFAULT_DELTA = 7 # default delta value: range = center +- delta
 
 
@@ -134,6 +146,7 @@ def handle_image_query(request, method):
                     # if image not found, make a new image:
                     # TODO: use serializer for this part
                     print('Creating new image object')
+                    pusher_client.trigger(lab_name, 'new-image', {'message': 'new image'})
                     img = lab.images.create(
                         name = namelist[i],
                         created = createdlist[i],

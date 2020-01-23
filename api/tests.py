@@ -135,7 +135,6 @@ class ImageTests(TestCase):
         view = views.ImageViewSet.as_view({'post':'create'})
         response = view(request)
         result = response.data.get('results')[0]
-        self.assertEqual(result.get('lab'), 'newlab')
         self.assertEqual(response.status_code, 200)
 
 

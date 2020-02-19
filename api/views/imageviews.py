@@ -206,7 +206,7 @@ class ImageViewSet(viewsets.ModelViewSet):
     queryset = Image.objects.all()
 
     # Cache page for the requested url
-    @method_decorator(cache_page(60*60*2))
+    # @method_decorator(cache_page(60*60*2))
     def list(self, request):
         '''
         List methods
@@ -219,7 +219,7 @@ class ImageViewSet(viewsets.ModelViewSet):
 
 
     # Cache page for the requested url
-    @method_decorator(cache_page(60*60*2))
+    # @method_decorator(cache_page(60*60*2))
     def create(self, request):
         '''
         Create methods

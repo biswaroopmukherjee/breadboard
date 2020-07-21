@@ -106,7 +106,6 @@ class Run(models.Model):
     """
     created = models.DateTimeField('datetime object created. Could be different by a few sec from runtime', default=timezone.now , blank=True)
     runtime = models.DateTimeField('datetime for expt run', default=timezone.now , blank=True)
-    workday = models.DateField('date of lab work. (often overflows through midnight)', default = datetime.date.today, blank=True )
     parameters = JSONField('Variables and parameters', default=default_params, blank=True, null=True)
     notes = models.TextField('Run notes', default='', blank=True, null=True)
 

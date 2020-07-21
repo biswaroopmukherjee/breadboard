@@ -38,16 +38,11 @@ class RunViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        Restricts queries by lab and/or
-        workday and/or a datetime range """
+        Restricts queries by lab and/or a datetime range 
+        """
         queryset = Run.objects.all()
         filter_dirty = {
             'lab__name' : self.request.query_params.get('lab', None),
-            'workday' : self.request.query_params.get('workday', None),
-            'workday__range' : (
-                        self.request.query_params.get('start_date', None),
-                        self.request.query_params.get('end_date', None),
-                        ),
             'runtime__range' : (
                         self.request.query_params.get('start_datetime', None),
                         self.request.query_params.get('end_datetime', None),

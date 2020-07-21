@@ -112,7 +112,7 @@ class RunSerializerList(serializers.ModelSerializer):
     class Meta:
         model = Run
         fields = ('url', 'id','created', 'runtime', 'parameters',
-                    'notes', 'workday', 'dataset')
+                    'notes', 'dataset')
 
 class RunSerializerDetail(serializers.ModelSerializer):
     images = serializers.HyperlinkedRelatedField(
@@ -124,7 +124,7 @@ class RunSerializerDetail(serializers.ModelSerializer):
     class Meta:
         model = Run
         fields = ('url', 'id','created', 'runtime', 'parameters',
-                    'notes', 'workday','lab', 'dataset', 'images')
+                    'notes', 'lab', 'dataset', 'images')
 
 class ImageSerializerList(serializers.ModelSerializer):
     class Meta:

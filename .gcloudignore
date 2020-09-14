@@ -10,8 +10,13 @@
 # If you would like to upload your .git directory, .gitignore file or files
 # from your .gitignore file, remove the corresponding line
 # below:
+
+
 .git
 .gitignore
+env/
+*__pycache__/
+.vscode/
 
 # Python pycache:
 __pycache__/

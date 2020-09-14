@@ -32,7 +32,6 @@ class RunViewSet(viewsets.ModelViewSet):
         return RunSerializerDetail
 
     # Cache page for the requested url
-    @method_decorator(cache_page(60*60*2))
     def list(self, request):
         return super().list(request)
 

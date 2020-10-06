@@ -170,7 +170,7 @@ def handle_image_query(request, method):
 
                 # attach a run to the image                    
                 try:
-                    found_run = Run.objects.get(runtime__range=runtime_range_search[i])
+                    found_run = Run.objects.get(runtime__range=runtime_range_search[i], lab__name= lab_name)
                     img.run = found_run
                     print('Run attached to image')
                     img.save()
@@ -178,7 +178,7 @@ def handle_image_query(request, method):
                     print('Warning: no run found')
                     # raise NotFound(detail='warning: no run found')
                 except Run.MultipleObjectsReturned:
-                    found_runs = Run.objects.filter(runtime__range=runtime_range_search[i])
+                    found_runs = Run.objects.filter(runtime__range=runtime_range_search[i], lab__name= lab_name)
                     img.run = found_runs[0]
                     print('Run attached to image')
                     img.save()
